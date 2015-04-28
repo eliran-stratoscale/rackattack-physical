@@ -1,6 +1,7 @@
 [Unit]
 Description=Rackattack Physical Hosts Provider
-After=network.target
+BindsTo=rabbitmq-server.service
+After=network.target rabbitmq-server.service
 
 [Service]
 Type=simple

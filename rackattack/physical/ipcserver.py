@@ -16,8 +16,12 @@ class IPCServer(baseipcserver.BaseIPCServer):
         baseipcserver.BaseIPCServer.__init__(self)
 
     def cmd_allocate(self, requirements, allocationInfo, peer):
-        allocation = self._allocations.create(requirements, allocationInfo)
-        return allocation.index()
+        import cProfile
+        cProfile.runctx("allocation = self._allocations.create(requirements, allocationInfo)",
+                        globals(), locals(), "allocate.txt")
+        # allocation = self._allocations.create(requirements, allocationInfo)
+        # return allocation.index()
+        return self._allocations._allocations[-1].index()
 
     def cmd_allocation__inauguratorsIDs(self, id, peer):
         allocation = self._allocations.byIndex(id)
@@ -51,7 +55,28 @@ class IPCServer(baseipcserver.BaseIPCServer):
 
     def cmd_allocation__free(self, id, peer):
         allocation = self._allocations.byIndex(id)
-        allocation.free()
+        if 'profile' in allocation._requirements.keys()[0]:
+            # import cProfile
+            # cProfile.runctx("self._allocations.byIndex(id).free()", globals(), locals(),
+            #                 "/root/free-profiling.txt")
+            import yappi
+            yappi.start()
+            allocation.free()
+            yappi.stop()
+            stats = yappi.get_func_stats()
+            stats = yappi.convert2pstats(stats)
+            stats.dump_stats("/root/free-profiling.txt")
+        else:
+            allocation.free()
+        # Callgraph:
+        # import pycallgraph
+        # from pycallgraph import PyCallGraph
+        # from pycallgraph.output import GraphvizOutput
+        # graphviz = GraphvizOutput()
+        # graphviz.output_file = "/root/bla.png"
+        # with PyCallGraph(output=graphviz):
+        #     self._allocations.byIndex(id).free()
+        # self._allocations.byIndex(id).free()
 
     def cmd_allocation__done(self, id, peer):
         allocation = self._allocations.byIndex(id)

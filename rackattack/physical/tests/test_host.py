@@ -34,6 +34,7 @@ class Test(unittest.TestCase):
         self.assertEquals(rootCredentials['username'], 'root')
         self.assertEquals(rootCredentials['password'], config.ROOT_PASSWORD)
         self.assertEquals(rootCredentials['hostname'], self.tested.ipAddress())
+        self.assertEquals(self.ipmiLogin, self.tested.ipmiLoginCredentials())
 
     def test_DestroyDoesNotRaiseAnException(self):
         self.tested.destroy()

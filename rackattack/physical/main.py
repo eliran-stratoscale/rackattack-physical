@@ -24,6 +24,9 @@ from twisted.python import log
 from rackattack.common import httprootresource
 import inaugurator.server.config
 import yaml
+from rackattack.physical import reclaimhost
+from rackattack.physical.config import (RECLAMATION_REQUESTS_FIFO_PATH,
+                                        SOFT_RECLAMATION_FAILURE_MSG_FIFO_PATH)
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--requestPort", default=1014, type=int)
@@ -49,6 +52,7 @@ with open(config.CONFIGURATION_FILE) as f:
 
 network.setGatewayIP(conf['GATEWAY_IP'])
 timer.TimersThread()
+withLocalObjectStore = config.WITH_LOCAL_OBJECT_STORE
 tftpbootInstance = tftpboot.TFTPBoot(
     netmask=network.NETMASK,
     inauguratorServerIP=network.BOOTSERVER_IP_ADDRESS,
@@ -56,7 +60,7 @@ tftpbootInstance = tftpboot.TFTPBoot(
     inauguratorGatewayIP=network.GATEWAY_IP_ADDRESS,
     osmosisServerIP=conf['OSMOSIS_SERVER_IP'],
     rootPassword=config.ROOT_PASSWORD,
-    withLocalObjectStore=True)
+    withLocalObjectStore=withLocalObjectStore)
 dnsmasq.DNSMasq.eraseLeasesFile()
 dnsmasq.DNSMasq.killAllPrevious()
 dnsmasqInstance = dnsmasq.DNSMasq(
@@ -74,13 +78,17 @@ freePool = freepool.FreePool(hostsInstance)
 allocationsInstance = allocations.Allocations(
     broadcaster=publishInstance, hosts=hostsInstance, freePool=freePool,
     osmosisServer=conf['OSMOSIS_SERVER_IP'])
+reclaimHost = reclaimhost.ReclaimPhysicalHostSpooler(hostsInstance,
+                                                     RECLAMATION_REQUESTS_FIFO_PATH,
+                                                     SOFT_RECLAMATION_FAILURE_MSG_FIFO_PATH)
 dynamicConfig = dynamicconfig.DynamicConfig(
     hosts=hostsInstance,
     dnsmasq=dnsmasqInstance,
     inaugurate=inaugurateInstance,
     tftpboot=tftpbootInstance,
     freePool=freePool,
-    allocations=allocationsInstance)
+    allocations=allocationsInstance,
+    reclaimHost=reclaimHost)
 ipcServer = ipcserver.IPCServer(
     publicNATIP=conf['PUBLIC_NAT_IP'],
     osmosisServerIP=conf['OSMOSIS_SERVER_IP'],

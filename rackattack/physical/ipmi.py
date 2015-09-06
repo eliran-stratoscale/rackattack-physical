@@ -2,12 +2,11 @@ import subprocess
 import time
 import logging
 import multiprocessing.pool
+from rackattack.physical.config import IPMITOOL_FILENAME
 
 
 class IPMI:
-    IPMITOOL_FILENAME = "ipmitool"
     _CONCURRENCY = 4
-    IPMITOOL_FILENAME = "ipmitool"
     _pool = None
 
     def __init__(self, hostname, username, password):
@@ -30,7 +29,7 @@ class IPMI:
     def _powerCommand(self, command):
         NUMBER_OF_RETRIES = 10
         cmdLine = [
-            self.IPMITOOL_FILENAME, "power", command,
+            IPMITOOL_FILENAME, "power", command,
             "-H", str(self._hostname), "-U", self._username, "-P", self._password]
         for i in xrange(NUMBER_OF_RETRIES - 1):
             try:

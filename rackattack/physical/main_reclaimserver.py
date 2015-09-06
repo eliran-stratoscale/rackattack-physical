@@ -6,7 +6,7 @@ import inaugurator.server.config
 from rackattack.common import tftpboot
 from rackattack.physical import config
 from rackattack.physical import network
-from rackattack.physical.coldreclaim import ColdReclaim
+from rackattack.physical.coldreclaim import coldReclaim
 from rackattack.common.reclaimserver import IOLoop
 from rackattack.physical.config import (RECLAMATION_REQUESTS_FIFO_PATH,
                                         SOFT_RECLAMATION_FAILURE_MSG_FIFO_PATH)
@@ -68,7 +68,7 @@ def main():
     ioLoop = IOLoop(inauguratorCommandLine,
                     reclamationRequestFifoPath=RECLAMATION_REQUESTS_FIFO_PATH,
                     softReclamationFailedMsgFifoPath=SOFT_RECLAMATION_FAILURE_MSG_FIFO_PATH)
-    ioLoop.registerAction("cold", ColdReclaim)
+    ioLoop.registerAction("cold", coldReclaim)
     ioLoop.run()
 
 if __name__ == "__main__":

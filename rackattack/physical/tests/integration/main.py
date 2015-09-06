@@ -2,16 +2,16 @@ import os
 import yaml
 import random
 import tempfile
-from rackattack.physical.tests.integration import use_local_inaugurator
 import rackattack.physical.config
-from rackattack.physical.ipmi import IPMI
+from rackattack.physical.tests.integration import use_local_inaugurator
 from rackattack.common import reclaimserver
 
 
 use_local_inaugurator.verify()
 
 
-RACK_CONFIG_FILE_PATH = os.path.join("/var", "rackattack_integration_test_conf_yaml")
+FAKE_REBOOTS_PIPE_NAME = os.path.join("/var", "lib", "rackattackphysical", "fake_reboots_pipe")
+RACK_CONFIG_FILE_PATH = os.path.join("/var", "lib", "rackattackphysical", "integration_test_rack.yaml")
 
 
 def useFakeRackConf():
@@ -20,8 +20,8 @@ def useFakeRackConf():
 
 
 def useFakeIPMITool():
-    assert hasattr(IPMI, "IPMITOOL_FILENAME")
-    IPMI.IPMITOOL_FILENAME = "sh/ipmitool_mock"
+    assert hasattr(rackattack.physical.config, "IPMITOOL_FILENAME")
+    rackattack.physical.config.IPMITOOL_FILENAME = "sh/ipmitool_mock"
 
 if __name__ == "__main__":
     useFakeRackConf()

@@ -3,34 +3,36 @@ import time
 import yaml
 import random
 import argparse
-from fakehosts import FAKE_REBOOTS_PIPE_NAME
-from rackattack.physical import config, pikapatch
-from rackattack.physical.tests.integration.main import useFakeRackConf, useFakeIPMITool
+import functools
+from rackattack.physical import config
+from rackattack.physical.tests.integration.main import useFakeRackConf, useFakeIPMITool, FAKE_REBOOTS_PIPE_NAME
 
 
 intervalRanges = {0: (0.01, 0.05), 0.85: (0.3, 0.6), 0.95: (2, 4)}
-rangesProbabilities = intervalRanges.keys()
+rangesProbabilities = list(intervalRanges.keys())
 rangesProbabilities.sort()
 
 
 def informFakeConsumersManagerOfReboot(hostname):
     fd = os.open(FAKE_REBOOTS_PIPE_NAME, os.O_WRONLY)
-    os.write(fd, "%(hostname)s," % dict(hostname=hostname))
+    hostRequest = "%(hostname)s," % dict(hostname=hostname)
+    hostRequest = hostRequest.encode("utf-8")
+    os.write(fd, hostRequest)
     os.close(fd)
 
 
-def power(mode):
+def power(hostname, mode):
     time.sleep(0.02)
     if mode == "on":
-        informFakeConsumersManagerOfReboot(args.H)
-        print "Chassis Power Control: Up/On"
+        informFakeConsumersManagerOfReboot(hostname)
+        print("Chassis Power Control: Up/On")
     elif mode == "off":
-        print "Chassis Power Control: Down/Off"
+        print("Chassis Power Control: Down/Off")
     else:
         raise NotImplementedError
 
 
-def sol(subaction):
+def sol(hostname, subaction):
     if subaction != "activate":
         return
     possibleOutputLines = ("Yo yo i'm a cool server",
@@ -44,7 +46,7 @@ def sol(subaction):
         chosenRange = intervalRanges[chosenRangeProbability]
         interval = chosenRange[0] + random.random() * (chosenRange[1] - chosenRange[0])
         time.sleep(interval)
-        print random.choice(possibleOutputLines)
+        print(random.choice(possibleOutputLines))
 
 
 def main(args):
@@ -58,11 +60,12 @@ def main(args):
     try:
         host = [host for host in conf["HOSTS"] if host["ipmiLogin"]["hostname"] == hostname][0]
     except IndexError:
-        print "Invalid hostname: %(hostname)s" % dict(hostname=hostname)
+        print("Invalid hostname: %(hostname)s" % dict(hostname=hostname))
         raise
     assert args.U == host["ipmiLogin"]["username"]
     assert args.P == host["ipmiLogin"]["password"]
     action = dict(power=power, sol=sol).get(args.action)
+    action = functools.partial(action, hostname)
     action(args.subaction)
 
 

@@ -1,0 +1,6 @@
+#!/bin/bash
+
+## Cleanup
+echo "Log file for the reclamation server: ${RECLAMATION_SERVER_LOG_FILE}"
+RECLAMATION_SERVER_LOG_FILE=/var/reclamation_server.log
+UPSETO_JOIN_PYTHON_NAMESPACES=Yes PYTHONPATH=. python rackattack/physical/tests/integration/main_reclaimserver.py # &> $RECLAMATION_SERVER_LOG_FILE

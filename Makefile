@@ -109,11 +109,11 @@ rackattack-physical-reclamation-image: build/rackattack-physical-reclamation.doc
 run-rackattack-physical-docker-container: rackattack-physical-docker-image
 	if [ $(docker ps | grep -c "rackattack-physical:") -ge 1 ]; then echo "Cannot start rackattack while another rackattack container is running."; exit 1; fi
 	-rm /var/lib/rackattackphysical/cid
-	docker run -v /etc/rackattack.physical.rack.yaml:/etc/rackattack.physical.rack.yaml -v /etc/rackattack.physical.conf:/etc/rackattack.physical.conf -v /usr/share/rackattack.physical/reclamation_requests_fifo:/usr/share/rackattack.physical/reclamation_requests_fifo -v /usr/share/rackattack.physical/soft_reclamations_failure_msg_fifo:/usr/share/rackattack.physical/soft_reclamations_failure_msg_fifo -v /var/lib/rackattackphysical/:/var/lib/rackattackphysical/ -p 1013:1013 -p 1014:1014 -p 1015:1015 -p 1016:1016 -p 67:67/udp -p 69:69 -p 53:53/udp --rm --cap-add NET_ADMIN --cidfile=/var/lib/rackattackphysical/cid rackattack-physical:v5
+	docker run -v /etc/rackattack-physical/:/etc/rackattack-physical/ -v /usr/share/rackattack.physical/reclamation_requests_fifo:/usr/share/rackattack.physical/reclamation_requests_fifo -v /usr/share/rackattack.physical/soft_reclamations_failure_msg_fifo:/usr/share/rackattack.physical/soft_reclamations_failure_msg_fifo -v /var/lib/rackattackphysical/:/var/lib/rackattackphysical/ -p 1013:1013 -p 1014:1014 -p 1015:1015 -p 1016:1016 -p 67:67/udp -p 69:69 -p 53:53/udp --rm --cap-add NET_ADMIN --cidfile=/var/lib/rackattackphysical/cid rackattack-physical:v5
 
 run-rackattack-physical-reclamation-docker-container: rackattack-physical-reclamation-docker-image
 	if [ $(docker ps | grep -c "rackattack-physical-reclamation:") -ge 1 ]; then echo "Cannot start rackattack while another rackattack container is running."; exit 1; fi
-	docker run -v /etc/rackattack.physical.conf:/etc/rackattack.physical.conf -v /usr/share/rackattack.physical/reclamation_requests_fifo:/usr/share/rackattack.physical/reclamation_requests_fifo -v /usr/share/rackattack.physical/soft_reclamations_failure_msg_fifo:/usr/share/rackattack.physical/soft_reclamations_failure_msg_fifo --rm rackattack-physical-reclamation:v5
+	docker run -v /etc/rackattack.physical/:/etc/rackattack-physical -v /usr/share/rackattack.physical/reclamation_requests_fifo:/usr/share/rackattack.physical/reclamation_requests_fifo -v /usr/share/rackattack.physical/soft_reclamations_failure_msg_fifo:/usr/share/rackattack.physical/soft_reclamations_failure_msg_fifo --rm rackattack-physical-reclamation:v5
 
 install_container: rackattack-physical-reclamation-image rackattack-physical-reclamation-image
 	sleep 5
